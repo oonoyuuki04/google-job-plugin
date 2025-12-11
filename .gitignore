@@ -1,0 +1,30 @@
+# WordPress
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Node modules (if using npm/yarn in future)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build files
+/build/
+/dist/
+
+# Environment files
+.env
+.env.local
