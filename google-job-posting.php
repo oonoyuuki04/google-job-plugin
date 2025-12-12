@@ -23,6 +23,7 @@ define('GJP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('GJP_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 // Include required files
+require_once GJP_PLUGIN_DIR . 'includes/class-gjp-field-mapper.php';
 require_once GJP_PLUGIN_DIR . 'includes/class-gjp-post-type.php';
 require_once GJP_PLUGIN_DIR . 'includes/class-gjp-meta-boxes.php';
 require_once GJP_PLUGIN_DIR . 'includes/class-gjp-structured-data.php';
@@ -74,19 +75,19 @@ class Google_Job_Posting {
      * Initialize plugin components
      */
     public function init() {
-        // Initialize custom post type
-        GJP_Post_Type::get_instance();
+        // Initialize field mapper
+        GJP_Field_Mapper::get_instance();
 
-        // Initialize meta boxes
-        GJP_Meta_Boxes::get_instance();
-
-        // Initialize structured data
+        // Initialize structured data (works with existing 'jobs' custom post type)
         GJP_Structured_Data::get_instance();
 
         // Initialize admin
         if (is_admin()) {
             GJP_Admin::get_instance();
         }
+
+        // Note: GJP_Post_Type and GJP_Meta_Boxes are not initialized
+        // This plugin works with existing custom post types
     }
 
     /**
