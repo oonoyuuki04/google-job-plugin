@@ -3,7 +3,7 @@
  * Plugin Name: Google Job Posting
  * Plugin URI: https://hibiya-ca.co.jp
  * Description: WordPress求人情報をGoogleしごと検索に連携するプラグイン
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Hibiya CA
  * Author URI: https://hibiya-ca.co.jp
  * License: GPL v2 or later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('GJP_VERSION', '1.0.0');
+define('GJP_VERSION', '1.0.1');
 define('GJP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GJP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('GJP_PLUGIN_BASENAME', plugin_basename(__FILE__));

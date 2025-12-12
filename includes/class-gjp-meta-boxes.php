@@ -91,6 +91,24 @@ class GJP_Meta_Boxes {
         );
 
         add_meta_box(
+            'gjp_job_content',
+            __('お仕事内容', 'google-job-posting'),
+            array($this, 'render_job_content_meta_box'),
+            GJP_Post_Type::POST_TYPE,
+            'normal',
+            'high'
+        );
+
+        add_meta_box(
+            'gjp_appeal_points',
+            __('アピールポイント・特徴', 'google-job-posting'),
+            array($this, 'render_appeal_points_meta_box'),
+            GJP_Post_Type::POST_TYPE,
+            'normal',
+            'high'
+        );
+
+        add_meta_box(
             'gjp_additional_info',
             __('追加情報', 'google-job-posting'),
             array($this, 'render_additional_info_meta_box'),
@@ -256,6 +274,34 @@ class GJP_Meta_Boxes {
     }
 
     /**
+     * Render job content meta box
+     */
+    public function render_job_content_meta_box($post) {
+        $job_content = get_post_meta($post->ID, '_gjp_job_content', true);
+        ?>
+        <div class="gjp-meta-field">
+            <label for="gjp_job_content"><?php _e('お仕事内容の詳細', 'google-job-posting'); ?></label>
+            <textarea id="gjp_job_content" name="gjp_job_content" rows="8" class="widefat"><?php echo esc_textarea($job_content); ?></textarea>
+            <p class="description"><?php _e('具体的な業務内容を詳しく入力してください。このフィールドは検索結果に表示される重要な情報です。', 'google-job-posting'); ?></p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render appeal points meta box
+     */
+    public function render_appeal_points_meta_box($post) {
+        $appeal_points = get_post_meta($post->ID, '_gjp_appeal_points', true);
+        ?>
+        <div class="gjp-meta-field">
+            <label for="gjp_appeal_points"><?php _e('アピールポイント・特徴', 'google-job-posting'); ?></label>
+            <textarea id="gjp_appeal_points" name="gjp_appeal_points" rows="6" class="widefat"><?php echo esc_textarea($appeal_points); ?></textarea>
+            <p class="description"><?php _e('この求人のアピールポイントや特徴を入力してください。例：未経験歓迎、駅近、残業少なめ、福利厚生充実など。検索結果で目立つように表示されます。', 'google-job-posting'); ?></p>
+        </div>
+        <?php
+    }
+
+    /**
      * Render additional info meta box
      */
     public function render_additional_info_meta_box($post) {
@@ -263,9 +309,9 @@ class GJP_Meta_Boxes {
         $remote_allowed = get_post_meta($post->ID, '_gjp_remote_allowed', true);
         ?>
         <div class="gjp-meta-field">
-            <label for="gjp_comment"><?php _e('コメント', 'google-job-posting'); ?></label>
-            <textarea id="gjp_comment" name="gjp_comment" rows="5" class="widefat"><?php echo esc_textarea($comment); ?></textarea>
-            <p class="description"><?php _e('求人に関する追加情報やコメントを入力してください。', 'google-job-posting'); ?></p>
+            <label for="gjp_comment"><?php _e('その他のコメント', 'google-job-posting'); ?></label>
+            <textarea id="gjp_comment" name="gjp_comment" rows="4" class="widefat"><?php echo esc_textarea($comment); ?></textarea>
+            <p class="description"><?php _e('その他、求人に関する補足情報があれば入力してください。', 'google-job-posting'); ?></p>
         </div>
 
         <div class="gjp-meta-field">
@@ -320,12 +366,21 @@ class GJP_Meta_Boxes {
             'gjp_access_info',
             'gjp_work_days',
             'gjp_work_hours',
+            'gjp_job_content',
+            'gjp_appeal_points',
             'gjp_comment',
         );
 
+        // Textarea fields that need special sanitization
+        $textarea_fields = array('gjp_job_content', 'gjp_appeal_points', 'gjp_comment', 'gjp_access_info');
+
         foreach ($meta_fields as $field) {
             if (isset($_POST[$field])) {
-                update_post_meta($post_id, '_' . $field, sanitize_text_field($_POST[$field]));
+                if (in_array($field, $textarea_fields)) {
+                    update_post_meta($post_id, '_' . $field, sanitize_textarea_field($_POST[$field]));
+                } else {
+                    update_post_meta($post_id, '_' . $field, sanitize_text_field($_POST[$field]));
+                }
             }
         }
 

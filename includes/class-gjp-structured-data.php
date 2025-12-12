@@ -179,52 +179,98 @@ class GJP_Structured_Data {
 
     /**
      * Get job description
+     * Optimized for Google for Jobs search ranking
      */
     private function get_description($post) {
-        $description = '';
+        $sections = array();
 
-        // Use post content as base description
-        if (!empty($post->post_content)) {
-            $description = wp_strip_all_tags($post->post_content);
-            $description = str_replace(array("\r\n", "\r", "\n"), ' ', $description);
+        // 1. アピールポイント・特徴（最初に配置して目立たせる）
+        $appeal_points = get_post_meta($post->ID, '_gjp_appeal_points', true);
+        if (!empty($appeal_points)) {
+            $sections[] = '【アピールポイント】' . "\n" . $appeal_points;
         }
 
-        // Use excerpt if content is empty
-        if (empty($description) && !empty($post->post_excerpt)) {
-            $description = wp_strip_all_tags($post->post_excerpt);
+        // 2. お仕事内容（詳細）
+        $job_content = get_post_meta($post->ID, '_gjp_job_content', true);
+        if (!empty($job_content)) {
+            $sections[] = '【お仕事内容】' . "\n" . $job_content;
+        } elseif (!empty($post->post_content)) {
+            // フォールバック：投稿本文を使用
+            $content = wp_strip_all_tags($post->post_content);
+            $sections[] = '【お仕事内容】' . "\n" . $content;
         }
 
-        // Add additional information
-        $work_days = get_post_meta($post->ID, '_gjp_work_days', true);
-        $work_hours = get_post_meta($post->ID, '_gjp_work_hours', true);
+        // 3. 給与情報
+        $salary_text = get_post_meta($post->ID, '_gjp_salary_text', true);
+        if (!empty($salary_text)) {
+            $sections[] = '【給与】' . $salary_text;
+        }
+
+        // 4. 勤務地情報
+        $address_region = get_post_meta($post->ID, '_gjp_address_region', true);
+        $address_locality = get_post_meta($post->ID, '_gjp_address_locality', true);
+        $street_address = get_post_meta($post->ID, '_gjp_street_address', true);
+
+        $location_parts = array_filter(array($address_region, $address_locality, $street_address));
+        if (!empty($location_parts)) {
+            $sections[] = '【勤務地】' . implode('', $location_parts);
+        }
+
+        // 5. 交通アクセス
         $access_info = get_post_meta($post->ID, '_gjp_access_info', true);
-        $comment = get_post_meta($post->ID, '_gjp_comment', true);
-
-        $additional_info = array();
-
-        if (!empty($work_days)) {
-            $additional_info[] = '就業日: ' . $work_days;
-        }
-
-        if (!empty($work_hours)) {
-            $additional_info[] = '就業時間: ' . $work_hours;
-        }
-
         if (!empty($access_info)) {
-            $additional_info[] = '交通アクセス: ' . $access_info;
+            $sections[] = '【交通アクセス】' . $access_info;
         }
 
+        // 6. 勤務時間・日数
+        $work_hours = get_post_meta($post->ID, '_gjp_work_hours', true);
+        $work_days = get_post_meta($post->ID, '_gjp_work_days', true);
+
+        $work_info_parts = array();
+        if (!empty($work_hours)) {
+            $work_info_parts[] = '勤務時間: ' . $work_hours;
+        }
+        if (!empty($work_days)) {
+            $work_info_parts[] = '勤務日: ' . $work_days;
+        }
+        if (!empty($work_info_parts)) {
+            $sections[] = '【勤務時間】' . implode(' / ', $work_info_parts);
+        }
+
+        // 7. 雇用形態
+        $employment_type = get_post_meta($post->ID, '_gjp_employment_type', true);
+        if (!empty($employment_type)) {
+            $types = array(
+                'FULL_TIME' => '正社員',
+                'PART_TIME' => 'アルバイト・パート',
+                'CONTRACTOR' => '契約社員',
+                'TEMPORARY' => '派遣社員',
+                'INTERN' => 'インターン',
+                'VOLUNTEER' => 'ボランティア',
+                'PER_DIEM' => '日雇い',
+                'OTHER' => 'その他',
+            );
+            if (isset($types[$employment_type])) {
+                $sections[] = '【雇用形態】' . $types[$employment_type];
+            }
+        }
+
+        // 8. その他のコメント
+        $comment = get_post_meta($post->ID, '_gjp_comment', true);
         if (!empty($comment)) {
-            $additional_info[] = $comment;
+            $sections[] = '【その他】' . $comment;
         }
 
-        if (!empty($additional_info)) {
-            $description .= "\n\n" . implode("\n", $additional_info);
-        }
+        // 全セクションを結合
+        $description = implode("\n\n", array_filter($sections));
 
-        // Ensure minimum length
-        if (strlen($description) < 10) {
-            $description = $post->post_title . 'の求人情報です。';
+        // 最低限の情報を確保
+        if (strlen($description) < 50) {
+            $job_title = get_post_meta($post->ID, '_gjp_job_title', true);
+            if (empty($job_title)) {
+                $job_title = $post->post_title;
+            }
+            $description = $job_title . 'の求人情報です。' . "\n" . $description;
         }
 
         return trim($description);
