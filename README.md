@@ -177,5 +177,5 @@ GPL v2 or later
 
 ## クレジット
 
-開発: Hibiya CA
-URL: https://hibiya-ca.co.jp
+開発: Ohno
+URL: https://biz-reference.jp/
